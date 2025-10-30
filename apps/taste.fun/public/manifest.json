@@ -1,0 +1,42 @@
+{
+  "name": "Consensus - Decentralized Content Creation",
+  "short_name": "Consensus",
+  "description": "Discover, fund, and validate collective needs. A Solana-powered platform for AI-generated content.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#121212",
+  "theme_color": "#121212",
+  "categories": ["entertainment", "social", "productivity"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Create Spark",
+      "short_name": "Spark",
+      "description": "Create a new idea",
+      "url": "/spark",
+      "icons": []
+    },
+    {
+      "name": "Jury Duty",
+      "short_name": "Jury",
+      "description": "Review submissions",
+      "url": "/jury",
+      "icons": []
+    }
+  ]
+}

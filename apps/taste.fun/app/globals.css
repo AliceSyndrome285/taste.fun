@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #121212;
+  --surface: #181818;
+  --muted: #b3b3b3;
+  --brand: #1DB954;
+  --brand-foreground: #121212;
+  --brand-hover: #1ed760;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-[var(--background)] text-white antialiased;
+}
+
+/**** Components ****/
+
+.btn {
+  @apply inline-flex items-center justify-center rounded-md bg-[var(--brand)] px-4 py-2 text-sm font-medium text-[var(--brand-foreground)] transition-colors hover:bg-[var(--brand-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2 active:scale-[0.98];
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center rounded-md bg-zinc-800 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-600 active:scale-[0.98];
+}
+
+.nav-link {
+  @apply text-sm text-zinc-300 hover:text-white transition-colors;
+}
+
+.card {
+  @apply rounded-lg bg-[var(--surface)] shadow-elevate border border-zinc-800;
+}
+
+.card-header {
+  @apply border-b border-zinc-800 p-4 text-sm font-medium text-zinc-200;
+}
+
+.card-content {
+  @apply p-4 text-zinc-300;
+}
+
+.progress-root {
+  @apply relative h-2 w-full overflow-hidden rounded-full bg-zinc-800;
+}
+
+.progress-indicator {
+  @apply h-full w-full flex-1 bg-[var(--brand)] transition-transform duration-300 ease-out;
+}
+
+/**** Utilities ****/
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}

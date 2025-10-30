@@ -1,0 +1,40 @@
+{
+  "name": "consensus-pwa",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Consensus PWA built with Next.js 14 App Router, Tailwind, Radix UI, Zustand, and Solana wallet adapter (devnet)",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint --config ../../eslint.base.cjs --ext .ts,.tsx,.js .",
+    "format": "prettier --config ../../prettier.config.cjs --ignore-path ../../.prettierignore \"**/*.{js,ts,tsx,jsx,json,md,css}\" --write"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.32.1",
+    "@radix-ui/react-progress": "^1.0.3",
+    "@solana/spl-token": "^0.4.14",
+    "@solana/wallet-adapter-react": "^0.15.39",
+    "@solana/wallet-adapter-wallets": "^0.19.19",
+    "@solana/web3.js": "^1.95.3",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.23.24",
+    "lucide-react": "^0.546.0",
+    "next": "^14.2.5",
+    "next-pwa": "^5.6.0",
+    "react": "^18.3.1",
+    "react-confetti": "^6.4.0",
+    "react-dom": "^18.3.1",
+    "recharts": "^3.3.0",
+    "zustand": "^4.5.5"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.2",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8.57.1",
+    "postcss": "^8.4.49",
+    "prettier": "^2.8.8",
+    "tailwindcss": "^3.4.14",
+    "typescript": "^5.7.3"
+  }
+}

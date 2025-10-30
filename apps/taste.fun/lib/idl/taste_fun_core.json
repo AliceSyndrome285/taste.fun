@@ -1,0 +1,930 @@
+{
+  "address": "D5Cb9JvycX4Sgyu4iYxBSsnDpWEtZRg7fDZTUVMN9avU",
+  "metadata": {
+    "name": "taste_fun_core",
+    "version": "0.1.0",
+    "spec": "0.1.0"
+  },
+  "instructions": [
+    {
+      "name": "cancel_idea",
+      "docs": [
+        "取消创意 (参与者不足或超时)"
+      ],
+      "discriminator": [
+        106,
+        70,
+        101,
+        46,
+        10,
+        145,
+        160,
+        30
+      ],
+      "accounts": [
+        {
+          "name": "idea",
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "confirm_images",
+      "docs": [
+        "确认图片生成完成 (由授权的链下服务调用)"
+      ],
+      "discriminator": [
+        148,
+        19,
+        50,
+        44,
+        122,
+        79,
+        199,
+        68
+      ],
+      "accounts": [
+        {
+          "name": "idea",
+          "writable": true
+        },
+        {
+          "name": "depin_authority",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "image_uris",
+          "type": {
+            "vec": "string"
+          }
+        }
+      ]
+    },
+    {
+      "name": "create_idea",
+      "docs": [
+        "创建新创意，提交 AI 生图 Prompt"
+      ],
+      "discriminator": [
+        113,
+        242,
+        211,
+        86,
+        201,
+        199,
+        240,
+        240
+      ],
+      "accounts": [
+        {
+          "name": "idea",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  105,
+                  100,
+                  101,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "initiator"
+              },
+              {
+                "kind": "arg",
+                "path": "idea_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "idea"
+              }
+            ]
+          }
+        },
+        {
+          "name": "theme_token_mint"
+        },
+        {
+          "name": "initiator",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "protocol_treasury",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "idea_id",
+          "type": "u64"
+        },
+        {
+          "name": "prompt",
+          "type": "string"
+        },
+        {
+          "name": "theme",
+          "type": "pubkey"
+        },
+        {
+          "name": "depin_provider",
+          "type": "pubkey"
+        },
+        {
+          "name": "voting_duration_hours",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "create_sponsored_idea",
+      "docs": [
+        "创建赞助竞赛 (赞助商注入初始奖池)"
+      ],
+      "discriminator": [
+        41,
+        86,
+        52,
+        233,
+        88,
+        176,
+        172,
+        241
+      ],
+      "accounts": [
+        {
+          "name": "idea",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  105,
+                  100,
+                  101,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "initiator"
+              },
+              {
+                "kind": "arg",
+                "path": "idea_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "idea"
+              }
+            ]
+          }
+        },
+        {
+          "name": "theme_token_mint"
+        },
+        {
+          "name": "sponsor_token_account",
+          "writable": true
+        },
+        {
+          "name": "vault_token_account",
+          "writable": true
+        },
+        {
+          "name": "initiator",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "sponsor",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "protocol_treasury",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "idea_id",
+          "type": "u64"
+        },
+        {
+          "name": "prompt",
+          "type": "string"
+        },
+        {
+          "name": "theme",
+          "type": "pubkey"
+        },
+        {
+          "name": "depin_provider",
+          "type": "pubkey"
+        },
+        {
+          "name": "voting_duration_hours",
+          "type": "u16"
+        },
+        {
+          "name": "initial_prize_pool",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "vote_for_image",
+      "docs": [
+        "质押并投票选择图片 (使用主题代币质押)"
+      ],
+      "discriminator": [
+        59,
+        57,
+        118,
+        208,
+        74,
+        40,
+        205,
+        146
+      ],
+      "accounts": [
+        {
+          "name": "idea",
+          "writable": true
+        },
+        {
+          "name": "vote",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  111,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "idea"
+              },
+              {
+                "kind": "account",
+                "path": "voter"
+              }
+            ]
+          }
+        },
+        {
+          "name": "reviewer_stake",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  118,
+                  105,
+                  101,
+                  119,
+                  101,
+                  114,
+                  95,
+                  115,
+                  116,
+                  97,
+                  107,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "idea"
+              },
+              {
+                "kind": "account",
+                "path": "voter"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "idea"
+              }
+            ]
+          }
+        },
+        {
+          "name": "voter_token_account",
+          "writable": true
+        },
+        {
+          "name": "vault_token_account",
+          "writable": true
+        },
+        {
+          "name": "voter",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "image_index",
+          "type": "u8"
+        },
+        {
+          "name": "token_amount",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Idea",
+      "discriminator": [
+        89,
+        220,
+        83,
+        214,
+        252,
+        228,
+        36,
+        123
+      ]
+    },
+    {
+      "name": "ReviewerStake",
+      "discriminator": [
+        70,
+        12,
+        166,
+        74,
+        111,
+        62,
+        196,
+        178
+      ]
+    },
+    {
+      "name": "Vault",
+      "discriminator": [
+        211,
+        8,
+        232,
+        43,
+        2,
+        152,
+        117,
+        119
+      ]
+    },
+    {
+      "name": "Vote",
+      "discriminator": [
+        96,
+        91,
+        104,
+        57,
+        145,
+        35,
+        172,
+        155
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "IdeaCancelled",
+      "discriminator": [
+        126,
+        57,
+        188,
+        65,
+        47,
+        217,
+        9,
+        138
+      ]
+    },
+    {
+      "name": "IdeaCreated",
+      "discriminator": [
+        155,
+        58,
+        149,
+        251,
+        124,
+        227,
+        158,
+        179
+      ]
+    },
+    {
+      "name": "ImagesGenerated",
+      "discriminator": [
+        78,
+        147,
+        148,
+        140,
+        244,
+        8,
+        152,
+        59
+      ]
+    },
+    {
+      "name": "SponsoredIdeaCreated",
+      "discriminator": [
+        173,
+        161,
+        93,
+        121,
+        231,
+        215,
+        39,
+        4
+      ]
+    },
+    {
+      "name": "VoteCast",
+      "discriminator": [
+        39,
+        53,
+        195,
+        104,
+        188,
+        17,
+        225,
+        213
+      ]
+    }
+  ],
+  "types": [
+    {
+      "name": "GenerationStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Pending"
+          },
+          {
+            "name": "Completed"
+          },
+          {
+            "name": "Failed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Idea",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "initiator",
+            "type": "pubkey"
+          },
+          {
+            "name": "idea_id",
+            "type": "u64"
+          },
+          {
+            "name": "prompt",
+            "type": "string"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "theme",
+            "type": "pubkey"
+          },
+          {
+            "name": "theme_token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "image_uris",
+            "type": {
+              "vec": "string"
+            }
+          },
+          {
+            "name": "generation_status",
+            "type": {
+              "defined": {
+                "name": "GenerationStatus"
+              }
+            }
+          },
+          {
+            "name": "generation_deadline",
+            "type": "i64"
+          },
+          {
+            "name": "depin_provider",
+            "type": "pubkey"
+          },
+          {
+            "name": "sponsor",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "initial_prize_pool",
+            "type": "u64"
+          },
+          {
+            "name": "total_staked",
+            "type": "u64"
+          },
+          {
+            "name": "min_stake",
+            "type": "u64"
+          },
+          {
+            "name": "curator_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "votes",
+            "type": {
+              "array": [
+                "u64",
+                4
+              ]
+            }
+          },
+          {
+            "name": "reject_all_weight",
+            "type": "u64"
+          },
+          {
+            "name": "total_voters",
+            "type": "u64"
+          },
+          {
+            "name": "winning_image_index",
+            "type": {
+              "option": "u8"
+            }
+          },
+          {
+            "name": "curator_fee_collected",
+            "type": "u64"
+          },
+          {
+            "name": "platform_fee_collected",
+            "type": "u64"
+          },
+          {
+            "name": "penalty_pool_amount",
+            "type": "u64"
+          },
+          {
+            "name": "winner_count",
+            "type": "u64"
+          },
+          {
+            "name": "voting_deadline",
+            "type": "i64"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "IdeaStatus"
+              }
+            }
+          },
+          {
+            "name": "vault_bump",
+            "type": "u8"
+          },
+          {
+            "name": "idea_bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "IdeaCancelled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "idea",
+            "type": "pubkey"
+          },
+          {
+            "name": "reason",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "IdeaCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "idea",
+            "type": "pubkey"
+          },
+          {
+            "name": "initiator",
+            "type": "pubkey"
+          },
+          {
+            "name": "prompt",
+            "type": "string"
+          },
+          {
+            "name": "depin_provider",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "IdeaStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "GeneratingImages"
+          },
+          {
+            "name": "Voting"
+          },
+          {
+            "name": "Completed"
+          },
+          {
+            "name": "Cancelled"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ImagesGenerated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "idea",
+            "type": "pubkey"
+          },
+          {
+            "name": "image_uris",
+            "type": {
+              "vec": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ReviewerStake",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "idea",
+            "type": "pubkey"
+          },
+          {
+            "name": "reviewer",
+            "type": "pubkey"
+          },
+          {
+            "name": "total_staked",
+            "type": "u64"
+          },
+          {
+            "name": "is_winner",
+            "type": "bool"
+          },
+          {
+            "name": "winnings",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SponsoredIdeaCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "idea",
+            "type": "pubkey"
+          },
+          {
+            "name": "initiator",
+            "type": "pubkey"
+          },
+          {
+            "name": "sponsor",
+            "type": "pubkey"
+          },
+          {
+            "name": "prompt",
+            "type": "string"
+          },
+          {
+            "name": "initial_prize_pool",
+            "type": "u64"
+          },
+          {
+            "name": "depin_provider",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Vault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "idea",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Vote",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "idea",
+            "type": "pubkey"
+          },
+          {
+            "name": "voter",
+            "type": "pubkey"
+          },
+          {
+            "name": "image_choice",
+            "type": "u8"
+          },
+          {
+            "name": "stake_amount",
+            "type": "u64"
+          },
+          {
+            "name": "vote_weight",
+            "type": "u64"
+          },
+          {
+            "name": "ts",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "VoteCast",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "idea",
+            "type": "pubkey"
+          },
+          {
+            "name": "voter",
+            "type": "pubkey"
+          },
+          {
+            "name": "image_choice",
+            "type": "u8"
+          },
+          {
+            "name": "stake_amount",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}
