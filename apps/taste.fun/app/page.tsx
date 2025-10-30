@@ -6,6 +6,7 @@ import { IdeaCard } from '@/components/ui/idea-card';
 import { Search, TrendingUp } from 'lucide-react';
 import { apiClient, IdeaResponse, StatsResponse } from '@/lib/api/client';
 import { useWebSocket, WSMessageType } from '@/lib/hooks/useWebSocket';
+import Link from 'next/link';
 
 import { IdeaStatus, lamportsToSol, CONSTANTS } from '@/lib/types/consensus-v3';
 
@@ -101,14 +102,23 @@ export default function HomePage() {
 
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8 md:space-y-10">
-      {/* Search Bar */}
-      <div className="relative max-w-2xl">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={20} />
-        <input
-          type="text"
-          placeholder="Search for ideas, creators, or tags..."
-          className="w-full pl-11 pr-4 py-3 bg-[var(--surface)] border border-zinc-800 rounded-lg text-white placeholder:text-zinc-500 focus:outline-none focus:border-[var(--brand)] focus:ring-1 focus:ring-[var(--brand)] transition-colors"
-        />
+      {/* Search & Create Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search for ideas, creators, or tags..."
+            className="w-full pl-11 pr-4 py-3 bg-[var(--surface)] border border-zinc-800 rounded-lg text-white placeholder:text-zinc-500 focus:outline-none focus:border-[var(--brand)] focus:ring-1 focus:ring-[var(--brand)] transition-colors"
+          />
+        </div>
+        <Link
+          href="/theme/create"
+          className="flex items-center justify-center gap-2 px-6 py-3 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-white rounded-lg font-medium transition-all hover:scale-105 active:scale-95 whitespace-nowrap"
+        >
+          <span className="text-xl">✨</span>
+          Create Theme
+        </Link>
       </div>
 
       {/* Grand Prize Banner */}

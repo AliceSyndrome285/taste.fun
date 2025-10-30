@@ -1,69 +1,69 @@
 "use client";
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { useMemo } from 'react';
-import { Card } from '@/components/ui/card';
-import { useAnchor } from '@/lib/anchor/provider';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { Wallet as WalletIcon } from 'lucide-react';
+
+// Import wallet adapter CSS
+import '@solana/wallet-adapter-react-ui/styles.css';
 
 export default function WalletPage() {
-  const { publicKey, connected, connecting, connect, disconnect, wallets, select } = useWallet();
-  const { provider } = useAnchor();
+  const router = useRouter();
+  const { publicKey, connected } = useWallet();
 
-  const walletName = useMemo(() => wallets.find((w) => w.readyState !== 'Unsupported')?.adapter.name, [wallets]);
+  // For demo fallback
+  const demoWallet = process.env.NEXT_PUBLIC_DEMO_WALLET_ADDRESS || 'Demo1234567890abcdefghijk';
+
+  useEffect(() => {
+    // If wallet is connected, redirect to user's wallet page
+    if (connected && publicKey) {
+      router.push(`/wallet/${publicKey.toString()}`);
+    }
+  }, [connected, publicKey, router]);
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
-      <Card>
-        <Card.Header>Wallet</Card.Header>
-        <Card.Content>
-          <div className="space-y-3">
-            {connected ? (
-              <>
-                <p className="text-sm text-zinc-400">Connected as</p>
-                <p className="font-mono">{publicKey?.toBase58()}</p>
-                <div className="flex gap-3 pt-2">
-                  <button className="btn" onClick={() => disconnect()}>Disconnect</button>
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="text-sm text-zinc-400">No wallet connected</p>
-                <div className="flex gap-3 pt-2">
-                  <button
-                    className="btn"
-                    disabled={connecting}
-                    onClick={async () => {
-                      const first = wallets.find((w) => w.readyState !== 'Unsupported');
-                      if (first) select(first.adapter.name);
-                      try {
-                        await connect();
-                      } catch (e) {
-                        // swallow
-                      }
-                    }}
-                  >
-                    {connecting ? 'Connecting...' : `Connect${walletName ? ` ${walletName}` : ''}`}
-                  </button>
-                </div>
-              </>
-            )}
+    <div className="min-h-screen flex items-center justify-center pb-20 md:pb-8">
+      <div className="max-w-md w-full mx-4">
+        <div className="bg-zinc-900/50 rounded-xl border border-zinc-800 p-8 text-center space-y-6">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[var(--brand)] to-purple-500 flex items-center justify-center mx-auto">
+            <WalletIcon className="w-10 h-10 text-white" />
           </div>
-        </Card.Content>
-      </Card>
+          
+          <div>
+            <h1 className="text-2xl font-bold mb-2">View Your Wallet</h1>
+            <p className="text-zinc-400">
+              {connected 
+                ? 'Redirecting to your wallet...' 
+                : 'Connect your wallet to view your portfolio and voting history'
+              }
+            </p>
+          </div>
 
-      <Card>
-        <Card.Header>Anchor Provider</Card.Header>
-        <Card.Content>
-          {provider ? (
-            <div className="space-y-2">
-              <p className="text-sm text-zinc-400">Provider ready</p>
-              <p className="text-xs text-zinc-400">Commitment: confirmed</p>
+          {!connected && (
+            <div className="pt-4">
+              <WalletMultiButton className="!bg-[var(--brand)] hover:!bg-[var(--brand-hover)] !rounded-lg !h-12 !text-white !font-semibold" />
             </div>
-          ) : (
-            <p className="text-zinc-400">Connect a wallet to initialize the Anchor provider.</p>
           )}
-        </Card.Content>
-      </Card>
+
+          {connected && (
+            <div className="animate-pulse">
+              <p className="text-sm text-zinc-500">Loading your wallet data...</p>
+            </div>
+          )}
+
+          <div className="pt-4 border-t border-zinc-800">
+            <p className="text-sm text-zinc-500 mb-3">Or view a demo wallet</p>
+            <button
+              onClick={() => router.push(`/wallet/${demoWallet}`)}
+              className="text-sm text-[var(--brand)] hover:underline"
+            >
+              View Demo Wallet →
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

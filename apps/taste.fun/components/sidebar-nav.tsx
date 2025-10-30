@@ -22,11 +22,12 @@ export function SidebarNav({ isDemoMode = false, notificationButton, activityFee
     ? [
         { href: '/demo', icon: Home, label: 'Home' },
         { href: '/demo/leaderboard', icon: Trophy, label: 'Leaderboard' },
-        { href: '/demo/profile', icon: User, label: 'Profile' },
+        { href: '/demo/wallet', icon: User, label: 'Wallet' },
       ]
     : [
         { href: '/', icon: Home, label: 'Home' },
-        { href: '/profile', icon: User, label: 'Profile' },
+        { href: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
+        { href: '/wallet', icon: User, label: 'Wallet' },
       ];
 
   return (

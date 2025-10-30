@@ -298,10 +298,38 @@ class APIClient {
   }
 
   /**
+   * GET /api/users/:pubkey/portfolio - Get user portfolio (wallet data)
+   */
+  async getUserPortfolio(pubkey: string): Promise<any> {
+    return this.fetch<any>(`/users/${pubkey}/portfolio`);
+  }
+
+  /**
    * GET /api/stats - Get platform statistics
    */
   async getStats(): Promise<StatsResponse> {
     return this.fetch<StatsResponse>('/stats');
+  }
+
+  /**
+   * GET /api/leaderboard/themes - Get theme leaderboard
+   */
+  async getThemeLeaderboard(sortBy: 'votes' | 'market_cap' = 'votes'): Promise<PaginatedResponse<any>> {
+    return this.fetch<PaginatedResponse<any>>(`/leaderboard/themes?sortBy=${sortBy}`);
+  }
+
+  /**
+   * GET /api/leaderboard/ideas - Get idea leaderboard
+   */
+  async getIdeaLeaderboard(status: 'Voting' | 'Completed' = 'Voting'): Promise<PaginatedResponse<any>> {
+    return this.fetch<PaginatedResponse<any>>(`/leaderboard/ideas?status=${status}`);
+  }
+
+  /**
+   * GET /api/leaderboard/voters - Get voter leaderboard
+   */
+  async getVoterLeaderboard(): Promise<PaginatedResponse<any>> {
+    return this.fetch<PaginatedResponse<any>>('/leaderboard/voters');
   }
 
   /**

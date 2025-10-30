@@ -19,6 +19,28 @@ export default function CreateThemePage() {
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState('');
   const [error, setError] = useState('');
+  const [coverImage, setCoverImage] = useState<string>('');
+  const [symbol, setSymbol] = useState('');
+
+  // Auto-generate symbol from name
+  const handleNameChange = (value: string) => {
+    setName(value);
+    // Generate symbol: take first letters of words, uppercase, max 8 chars
+    const generatedSymbol = value
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 8);
+    setSymbol(generatedSymbol);
+  };
+
+  const handleCoverFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e?.target?.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setCoverImage(url);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,7 +133,7 @@ export default function CreateThemePage() {
                 id="name"
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => handleNameChange(e.target.value)}
                 maxLength={12}
                 placeholder="e.g., AI Art Collective"
                 className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
@@ -120,6 +142,68 @@ export default function CreateThemePage() {
               <p className="text-xs text-gray-500 mt-1">
                 {name.length}/12 characters
               </p>
+            </div>
+
+            {/* Symbol */}
+            <div>
+              <label htmlFor="symbol" className="block text-sm font-medium mb-2">
+                Token Symbol
+              </label>
+              <input
+                id="symbol"
+                type="text"
+                value={symbol}
+                onChange={(e) => setSymbol(e.target.value.toUpperCase().slice(0, 8))}
+                maxLength={8}
+                placeholder="e.g., AIA"
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-purple-500 transition-colors font-mono"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {symbol.length}/8 characters • Auto-generated from theme name
+              </p>
+            </div>
+
+            {/* Cover Image Upload */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Cover Image
+              </label>
+              <div className="flex items-center gap-4">
+                <div className="w-32 h-32 rounded-lg overflow-hidden bg-gray-800 border border-gray-700">
+                  {coverImage ? (
+                    <img src={coverImage} alt="Cover" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-500 text-xs text-center p-2">
+                      No cover image
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-400 mb-3">
+                    Upload a cover image for your theme (recommended 1:1 ratio)
+                  </p>
+                  <div className="flex gap-2">
+                    <label className="px-4 py-2 bg-gray-800 rounded-lg cursor-pointer text-sm text-gray-200 border border-gray-700 hover:bg-gray-700 transition-colors">
+                      Upload Image
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleCoverFile}
+                        className="hidden"
+                      />
+                    </label>
+                    {coverImage && (
+                      <button
+                        type="button"
+                        onClick={() => setCoverImage('')}
+                        className="px-4 py-2 bg-transparent rounded-lg text-sm text-red-400 border border-gray-700 hover:bg-red-400/10 transition-colors"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Description */}
@@ -140,6 +224,24 @@ export default function CreateThemePage() {
               <p className="text-xs text-gray-500 mt-1">
                 {description.length}/48 characters
               </p>
+            </div>
+
+            {/* Cover Image */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Cover Image
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleCoverFile}
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
+              />
+              {coverImage && (
+                <div className="mt-4">
+                  <img src={coverImage} alt="Cover Image Preview" className="w-full h-auto rounded-lg" />
+                </div>
+              )}
             </div>
 
             {/* Voting Mode */}
