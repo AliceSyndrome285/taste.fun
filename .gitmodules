@@ -1,0 +1,6 @@
+[submodule "taste.fun-backend"]
+	path = taste.fun-backend
+	url = https://github.com/OWNER/taste.fun-backend.git
+[submodule "taste.fun-smartcontract"]
+	path = taste.fun-smartcontract
+	url = https://github.com/OWNER/taste.fun-smartcontract.git
