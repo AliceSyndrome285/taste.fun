@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_lang::system_program::System;
-use anchor_spl::token::{self, burn, Mint, Token, TokenAccount, Burn};
+use anchor_spl::token::{burn, Mint, Token, TokenAccount, Burn};
 use anchor_spl::associated_token::AssociatedToken;
 use taste_fun_shared::*;
 use crate::{Theme, ThemeVault, TradingConfiguration, BuybackExecuted};

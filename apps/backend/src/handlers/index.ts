@@ -92,7 +92,11 @@ export async function handleThemeCreated(
       theme: event.theme.toString(),
     });
   } catch (error) {
-    logger.error('Error handling ThemeCreated event', { error, signature });
+    logger.error('Error handling ThemeCreated event', { 
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      signature 
+    });
     throw error;
   }
 }
@@ -281,17 +285,18 @@ export async function handleIdeaCreated(
       throw new Error('Failed to fetch idea account data');
     }
 
-    // Insert into database
+    // Insert into database (theme_pubkey is NULL for standalone ideas)
     await db.query(
       `INSERT INTO ideas (
-        pubkey, idea_id, initiator_pubkey, prompt, status,
+        pubkey, idea_id, theme_pubkey, initiator_pubkey, prompt, status,
         generation_status, generation_deadline, depin_provider,
         total_staked, min_stake, curator_fee_bps, votes,
         reject_all_weight, total_voters, created_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())`,
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW())`,
       [
         event.idea.toString(),
         ideaAccountInfo.ideaId,
+        null, // theme_pubkey - ideas are standalone
         event.initiator.toString(),
         event.prompt,
         IdeaStatus.GeneratingImages,
@@ -358,14 +363,15 @@ export async function handleSponsoredIdeaCreated(
 
     await db.query(
       `INSERT INTO ideas (
-        pubkey, idea_id, initiator_pubkey, sponsor_pubkey, prompt, status,
+        pubkey, idea_id, theme_pubkey, initiator_pubkey, sponsor_pubkey, prompt, status,
         generation_status, generation_deadline, depin_provider,
         total_staked, initial_prize_pool, min_stake, curator_fee_bps,
         votes, reject_all_weight, total_voters, created_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, NOW())`,
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, NOW())`,
       [
         event.idea.toString(),
         ideaAccountInfo.ideaId,
+        null, // theme_pubkey - ideas are standalone
         event.initiator.toString(),
         event.sponsor.toString(),
         event.prompt,

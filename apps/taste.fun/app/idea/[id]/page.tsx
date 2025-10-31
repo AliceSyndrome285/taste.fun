@@ -28,6 +28,7 @@ import {
   getImageChoiceLabel,
 } from '@/lib/types/consensus-v3';
 import { voteForImage, withdrawWinnings } from '@/lib/anchor/instructions-v3';
+import { ipfsToHttpUrlWithFallback } from '@/lib/utils/ipfs';
 // import { useAnchorProvider } from '@/lib/anchor/provider';
 
 // Mock data for development
@@ -42,10 +43,10 @@ const mockIdea = {
   votingDeadline: Math.floor(Date.now() / 1000) + 48 * 3600, // 2 days remaining
   createdAt: Math.floor(Date.now() / 1000) - 24 * 3600, // 1 day ago
   imageUris: [
-    'https://images.unsplash.com/photo-1518893063132-36e46dbe2428?w=600&h=400&fit=crop', // 替换为实际 IPFS/Arweave URI
-    'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1534972195531-d756b9bfa9f2?w=600&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=600&h=400&fit=crop',
+    'ipfs://QmExampleHash1', // 实际应该从后端API获取IPFS URIs
+    'ipfs://QmExampleHash2',
+    'ipfs://QmExampleHash3', 
+    'ipfs://QmExampleHash4',
   ],
   votes: [12, 18, 15, 5], // 票数分布
   winningImageIndex: null,
@@ -213,9 +214,14 @@ export default function IdeaDetailPageV3() {
                     {/* Image */}
                     <div className="relative aspect-video bg-zinc-900">
                       <img
-                        src={uri}
+                        src={ipfsToHttpUrlWithFallback(uri, '/placeholder-image.png')}
                         alt={`Image ${String.fromCharCode(65 + index)}`}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          // Fallback to placeholder if IPFS image fails to load
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder-image.png';
+                        }}
                       />
                       {/* Vote Badge */}
                       <div className="absolute top-3 left-3 px-3 py-1.5 bg-black/70 backdrop-blur-sm rounded-lg text-sm font-medium text-white">

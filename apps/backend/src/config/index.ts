@@ -60,7 +60,7 @@ export const config = {
   // DePIN Configuration
   depin: {
     apiUrl: process.env.DEPIN_API_URL || 'https://cf-ai-image.943113638.workers.dev',
-    apiKey: process.env.DEPIN_API_KEY || '', // Cloudflare Worker doesn't need API Key
+    apiKey: process.env.DEPIN_API_KEY || '', // Used as password for Cloudflare Worker (default: admin123)
     servicePubkey: process.env.DEPIN_SERVICE_PUBKEY!,
     servicePrivateKey: process.env.DEPIN_SERVICE_PRIVATE_KEY!,
   },
@@ -115,7 +115,7 @@ const requiredEnvVars = [
   'PROGRAM_ID',
   'DB_PASSWORD',
   'DEPIN_API_URL',
-  'DEPIN_API_KEY',
+  // DEPIN_API_KEY is optional - Cloudflare Worker doesn't need API Key
 ];
 
 for (const envVar of requiredEnvVars) {

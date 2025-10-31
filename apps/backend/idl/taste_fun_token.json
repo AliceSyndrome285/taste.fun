@@ -1,5 +1,5 @@
 {
-  "address": "3vRrmiTYYqrhdFUPf2ioBnmZQQB66yfKwKCBKFSVvdkg",
+  "address": "AKLa61NJ7uwrSb13P7dhcuNfBFRJbVA2BVeqTtCXpe7X",
   "metadata": {
     "name": "taste_fun_token",
     "version": "0.1.0",
@@ -223,9 +223,139 @@
         {
           "name": "token_program",
           "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         }
       ],
       "args": []
+    },
+    {
+      "name": "init_vault_and_mint",
+      "docs": [
+        "初始化vault和mint (第二步)"
+      ],
+      "discriminator": [
+        126,
+        222,
+        28,
+        139,
+        179,
+        93,
+        146,
+        209
+      ],
+      "accounts": [
+        {
+          "name": "theme",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  104,
+                  101,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "creator"
+              },
+              {
+                "kind": "arg",
+                "path": "theme_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  104,
+                  101,
+                  109,
+                  101,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "creator"
+              },
+              {
+                "kind": "arg",
+                "path": "theme_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_mint",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  104,
+                  101,
+                  109,
+                  101,
+                  95,
+                  109,
+                  105,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "creator"
+              },
+              {
+                "kind": "arg",
+                "path": "theme_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "theme_id",
+          "type": "u64"
+        }
+      ]
     },
     {
       "name": "initialize_theme",
@@ -387,7 +517,7 @@
     {
       "name": "mint_initial_tokens",
       "docs": [
-        "铸造初始代币 (第二步)"
+        "铸造初始代币 (第三步)"
       ],
       "discriminator": [
         5,
@@ -460,33 +590,186 @@
         },
         {
           "name": "token_mint",
+          "writable": true
+        },
+        {
+          "name": "vault_token_account",
           "writable": true,
           "pda": {
             "seeds": [
               {
+                "kind": "account",
+                "path": "vault"
+              },
+              {
                 "kind": "const",
                 "value": [
-                  116,
-                  104,
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
                   101,
-                  109,
-                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
                   95,
-                  109,
-                  105,
-                  110,
-                  116
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
                 ]
               },
+              {
+                "kind": "account",
+                "path": "token_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "creator_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
               {
                 "kind": "account",
                 "path": "creator"
               },
               {
-                "kind": "arg",
-                "path": "theme_id"
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "token_mint"
               }
-            ]
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
           }
         },
         {
@@ -495,7 +778,12 @@
           "signer": true
         },
         {
-          "name": "token_program"
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         },
         {
           "name": "system_program",
@@ -807,6 +1095,14 @@
         },
         {
           "name": "vault_sol_account",
+          "writable": true
+        },
+        {
+          "name": "platform_treasury",
+          "writable": true
+        },
+        {
+          "name": "theme_creator",
           "writable": true
         },
         {

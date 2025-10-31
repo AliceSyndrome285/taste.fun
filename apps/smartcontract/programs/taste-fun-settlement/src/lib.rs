@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 use taste_fun_shared::*;
 
-declare_id!("Ep2FC52vgZd4VVGwKH4YLyxQtorNMbz2N33VaL2pidYK");
+declare_id!("EeHN1oagPFzfyaye9FPyUjNx4nbnsFy2z3xhWPetVRxH");
 
 #[program]
 pub mod taste_fun_settlement {

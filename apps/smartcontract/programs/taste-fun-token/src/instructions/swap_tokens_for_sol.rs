@@ -113,13 +113,13 @@ pub fn swap_tokens_for_sol(
         .checked_div(BPS_DENOMINATOR as u128)
         .ok_or(ConsensusError::DivisionByZero)? as u64;
     
-    let platform_fee = (total_fee as u128)
+    let _platform_fee = (total_fee as u128)
         .checked_mul(config.platform_fee_split_bps as u128)
         .ok_or(ConsensusError::Overflow)?
         .checked_div(BPS_DENOMINATOR as u128)
         .ok_or(ConsensusError::DivisionByZero)? as u64;
     
-    let creator_fee = (total_fee as u128)
+    let _creator_fee = (total_fee as u128)
         .checked_mul(config.creator_fee_split_bps as u128)
         .ok_or(ConsensusError::Overflow)?
         .checked_div(BPS_DENOMINATOR as u128)

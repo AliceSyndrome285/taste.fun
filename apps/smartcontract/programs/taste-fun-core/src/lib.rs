@@ -3,7 +3,7 @@ use anchor_spl::token::{self, Token, Transfer};
 use anchor_spl::associated_token::AssociatedToken;
 use taste_fun_shared::*;
 
-declare_id!("D5Cb9JvycX4Sgyu4iYxBSsnDpWEtZRg7fDZTUVMN9avU");
+declare_id!("DiyEKJXPDNJ4Phfe3wVYkgi2NbJQuHtifgDgBYbCRuGe");
 
 #[program]
 pub mod taste_fun_core {

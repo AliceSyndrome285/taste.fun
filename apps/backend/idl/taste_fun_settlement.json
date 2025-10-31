@@ -1,5 +1,5 @@
 {
-  "address": "Ep2FC52vgZd4VVGwKH4YLyxQtorNMbz2N33VaL2pidYK",
+  "address": "EeHN1oagPFzfyaye9FPyUjNx4nbnsFy2z3xhWPetVRxH",
   "metadata": {
     "name": "taste_fun_settlement",
     "version": "0.1.0",
@@ -49,6 +49,38 @@
           }
         },
         {
+          "name": "token_mint",
+          "writable": true
+        },
+        {
+          "name": "vault_token_account",
+          "docs": [
+            "Vault token account holding staked tokens"
+          ],
+          "writable": true
+        },
+        {
+          "name": "initiator_token_account",
+          "docs": [
+            "Initiator's token account to receive curator fee"
+          ],
+          "writable": true
+        },
+        {
+          "name": "protocol_treasury_token_account",
+          "docs": [
+            "Protocol treasury token account to receive platform fee"
+          ],
+          "writable": true
+        },
+        {
+          "name": "theme_buyback_token_account",
+          "docs": [
+            "Theme buyback token account to receive buyback contribution"
+          ],
+          "writable": true
+        },
+        {
           "name": "initiator",
           "writable": true
         },
@@ -57,11 +89,24 @@
           "writable": true
         },
         {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "voting_mode",
+          "type": {
+            "defined": {
+              "name": "VotingMode"
+            }
+          }
+        }
+      ]
     },
     {
       "name": "withdraw_refund",
@@ -165,9 +210,27 @@
           }
         },
         {
+          "name": "vault_token_account",
+          "docs": [
+            "Vault token account"
+          ],
+          "writable": true
+        },
+        {
+          "name": "reviewer_token_account",
+          "docs": [
+            "Reviewer's token account to receive refund"
+          ],
+          "writable": true
+        },
+        {
           "name": "reviewer",
           "writable": true,
           "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
         {
           "name": "system_program",
@@ -278,9 +341,27 @@
           }
         },
         {
+          "name": "vault_token_account",
+          "docs": [
+            "Vault token account"
+          ],
+          "writable": true
+        },
+        {
+          "name": "reviewer_token_account",
+          "docs": [
+            "Reviewer's token account to receive winnings"
+          ],
+          "writable": true
+        },
+        {
           "name": "reviewer",
           "writable": true,
           "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
         {
           "name": "system_program",
@@ -675,6 +756,23 @@
           {
             "name": "reason",
             "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "VotingMode",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Classic"
+          },
+          {
+            "name": "Reverse"
+          },
+          {
+            "name": "MiddleWay"
           }
         ]
       }

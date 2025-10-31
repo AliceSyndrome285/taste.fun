@@ -3,6 +3,7 @@ import { Connection, Keypair, PublicKey, Transaction } from '@solana/web3.js';
 import { Program } from '@coral-xyz/anchor';
 import { config } from '../../config';
 import { logger } from '../../utils/logger';
+import { IPFSService } from '../ipfs';
 import * as bs58 from 'bs58';
 
 /**
@@ -57,6 +58,30 @@ export class DePINService {
       });
 
       // Call Cloudflare Worker API for batch generation
+      // First authenticate to get cookie if password is configured
+      let authCookie = '';
+      if (config.depin.apiKey) {
+        try {
+          const authResponse = await axios.post(
+            `${config.depin.apiUrl}/api/auth`,
+            { password: config.depin.apiKey },
+            {
+              headers: { 'Content-Type': 'application/json' },
+              timeout: 30000,
+            }
+          );
+          
+          // Extract cookie from Set-Cookie header
+          const setCookieHeader = authResponse.headers['set-cookie'];
+          if (setCookieHeader && setCookieHeader[0]) {
+            authCookie = setCookieHeader[0].split(';')[0]; // Get just the auth=1 part
+          }
+        } catch (authError) {
+          logger.warn('Failed to authenticate with DePIN service, trying without auth', { authError });
+        }
+      }
+
+      // Use batch-generate endpoint for multiple prompts
       const response = await axios.post(
         `${config.depin.apiUrl}/api/batch-generate`,
         {
@@ -69,7 +94,7 @@ export class DePINService {
         {
           headers: {
             'Content-Type': 'application/json',
-            // Cloudflare Worker doesn't need Authorization header if password is disabled
+            ...(authCookie ? { 'Cookie': authCookie } : {}),
           },
           timeout: 120000, // 2 minutes timeout
         }
@@ -90,10 +115,56 @@ export class DePINService {
         imageCount: images.length,
       });
 
-      // TODO: Upload base64 images to IPFS and get URIs
-      // For now, return the base64 data URLs directly
-      // In production, you should upload to IPFS using IPFSService
-      const imageUris = images; // These are base64 data URLs
+      // Upload images to IPFS
+      logger.info('Uploading images to IPFS', { ideaPubkey, imageCount: images.length });
+      const ipfsService = IPFSService.getInstance();
+      const imageUris: string[] = [];
+      
+      for (let i = 0; i < images.length; i++) {
+        const base64Data = images[i];
+        
+        // Convert base64 data URL to buffer
+        const base64String = base64Data.replace(/^data:image\/[a-z]+;base64,/, '');
+        const buffer = Buffer.from(base64String, 'base64');
+        
+        // Create filename with timestamp and index
+        const timestamp = Date.now();
+        const fileName = `idea_${ideaPubkey}_option_${i + 1}_${timestamp}.png`;
+        
+        // Create a temporary file-like object for upload
+        const blob = new Blob([buffer], { type: 'image/png' });
+        const file = new File([blob], fileName);
+        
+        try {
+          // Upload to IPFS using pinata SDK
+          const upload = await ipfsService.pinata.upload.file(file).addMetadata({
+            name: fileName,
+            keyvalues: {
+              project: 'taste.fun',
+              ideaPubkey,
+              optionIndex: String(i + 1),
+              timestamp: new Date().toISOString(),
+            },
+          });
+          
+          const ipfsUri = `ipfs://${upload.cid}`;
+          imageUris.push(ipfsUri);
+          
+          logger.info('Image uploaded to IPFS', {
+            ideaPubkey,
+            optionIndex: i + 1,
+            cid: upload.cid,
+            size: upload.size,
+          });
+        } catch (uploadError) {
+          logger.error('Failed to upload image to IPFS', {
+            error: uploadError,
+            ideaPubkey,
+            optionIndex: i + 1,
+          });
+          throw uploadError;
+        }
+      }
 
       // Call smart contract to confirm images
       await this.confirmImages(ideaPubkey, imageUris);
@@ -169,10 +240,15 @@ export class DePINService {
    */
   public async healthCheck(): Promise<boolean> {
     try {
+      const headers: Record<string, string> = {};
+      
+      // Only add Authorization header if API key is provided
+      if (config.depin.apiKey) {
+        headers.Authorization = `Bearer ${config.depin.apiKey}`;
+      }
+
       const response = await axios.get(`${config.depin.apiUrl}/health`, {
-        headers: {
-          Authorization: `Bearer ${config.depin.apiKey}`,
-        },
+        headers,
         timeout: 5000,
       });
       return response.status === 200;

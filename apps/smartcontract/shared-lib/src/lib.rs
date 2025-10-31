@@ -119,12 +119,12 @@ pub enum VotingMode {
 }
 
 impl VotingMode {
-    pub fn from_u8(value: u8) -> Result<Self, ProgramError> {
+    pub fn from_u8(value: u8) -> Result<Self> {
         match value {
             VOTING_MODE_CLASSIC => Ok(VotingMode::Classic),
             VOTING_MODE_REVERSE => Ok(VotingMode::Reverse),
             VOTING_MODE_MIDDLE_WAY => Ok(VotingMode::MiddleWay),
-            _ => Err(ProgramError::InvalidArgument),
+            _ => Err(ProgramError::InvalidArgument.into()),
         }
     }
 }

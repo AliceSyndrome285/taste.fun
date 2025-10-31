@@ -4,12 +4,10 @@ use anchor_spl::associated_token::AssociatedToken;
 use taste_fun_shared::*;
 use crate::{Theme, ThemeVault};
 
-/// Context for minting the initial supply of tokens for a theme.
-/// This instruction should be called after `initialize_theme`.
-/// 基于pumpfun模式：预先铸造总供应量到vault，然后分配给创建者
+/// 步骤1: 初始化vault和mint（拆分以减少栈使用）
 #[derive(Accounts)]
 #[instruction(theme_id: u64)]
-pub struct MintInitialTokens<'info> {
+pub struct InitVaultAndMint<'info> {
     #[account(
         mut,
         seeds = [b"theme", creator.key().as_ref(), theme_id.to_le_bytes().as_ref()],
@@ -36,7 +34,34 @@ pub struct MintInitialTokens<'info> {
     )]
     pub token_mint: Account<'info, Mint>,
 
-    /// Vault的代币账户，存放流通供应量(80%)
+    #[account(mut)]
+    pub creator: Signer<'info>,
+
+    pub token_program: Program<'info, Token>,
+    pub system_program: Program<'info, System>,
+}
+
+/// 步骤2: 铸造代币并分配（拆分以减少栈使用）
+#[derive(Accounts)]
+#[instruction(theme_id: u64)]
+pub struct MintInitialTokens<'info> {
+    #[account(
+        mut,
+        seeds = [b"theme", creator.key().as_ref(), theme_id.to_le_bytes().as_ref()],
+        bump = theme.theme_bump
+    )]
+    pub theme: Account<'info, Theme>,
+
+    #[account(
+        mut,
+        seeds = [b"theme_vault", creator.key().as_ref(), theme_id.to_le_bytes().as_ref()],
+        bump = theme.vault_bump
+    )]
+    pub vault: Account<'info, ThemeVault>,
+
+    #[account(mut)]
+    pub token_mint: Account<'info, Mint>,
+
     #[account(
         init,
         payer = creator,
@@ -45,7 +70,6 @@ pub struct MintInitialTokens<'info> {
     )]
     pub vault_token_account: Account<'info, TokenAccount>,
 
-    /// 创建者的代币账户，接收创建者储备(20%)
     #[account(
         init_if_needed,
         payer = creator,
@@ -62,181 +86,126 @@ pub struct MintInitialTokens<'info> {
     pub system_program: Program<'info, System>,
 }
 
-/// 铸造初始代币供应量并分配
-/// 参考pumpfun：预先铸造总供应量，然后分配
-#[inline(never)]
-pub fn mint_initial_tokens(ctx: Context<MintInitialTokens>, theme_id: u64) -> Result<()> {
+/// 步骤1: 初始化vault和mint
+pub fn init_vault_and_mint(ctx: Context<InitVaultAndMint>, _theme_id: u64) -> Result<()> {
+    let vault = &mut ctx.accounts.vault;
     let theme = &mut ctx.accounts.theme;
-
-    msg!("=== MintInitialTokens START ===");
-    msg!("Theme ID: {}", theme_id);
-
-    // 初始化vault数据
-    init_vault_data(&mut ctx.accounts.vault, theme.key(), ctx.bumps.vault)?;
-
-    // 更新theme账户中的引用
+    
+    // 初始化vault
+    vault.theme = theme.key();
+    vault.bump = ctx.bumps.vault;
+    
+    // 更新theme引用
     theme.vault_bump = ctx.bumps.vault;
     theme.token_mint = ctx.accounts.token_mint.key();
-
-    msg!("Vault initialized: {}", ctx.accounts.vault.key());
-    msg!("Token mint created: {}", ctx.accounts.token_mint.key());
-
-    // 步骤1：铸造总供应量到vault的token账户
-    let total_supply = TOKEN_TOTAL_SUPPLY;
-    mint_total_supply_to_vault(
-        &ctx.accounts.token_mint,
-        &ctx.accounts.vault_token_account,
-        &ctx.accounts.vault,
-        &ctx.accounts.token_program,
-        total_supply,
-        ctx.bumps.vault,
-        &ctx.accounts.creator.key(),
-        theme_id,
-    )?;
-
-    msg!("Total supply {} tokens minted to vault", total_supply);
-
-    // 步骤2：转移20%给创建者作为储备
-    let creator_reserve = calculate_creator_reserve(total_supply)?;
-    transfer_creator_reserve(
-        &ctx.accounts.vault_token_account,
-        &ctx.accounts.creator_token_account,
-        &ctx.accounts.vault,
-        &ctx.accounts.token_program,
-        creator_reserve,
-        ctx.bumps.vault,
-        &ctx.accounts.creator.key(),
-        theme_id,
-    )?;
-
-    msg!("Creator reserve {} tokens transferred", creator_reserve);
-
-    // 步骤3：更新theme状态
-    update_theme_after_minting(theme, total_supply, creator_reserve)?;
-
-    msg!("Theme token reserves: {}", theme.token_reserves);
-    msg!("Theme creator reserve: {}", theme.creator_reserve);
-    
-    // Emit ThemeCreated event now that theme is fully initialized
-    emit!(crate::ThemeCreated {
-        theme: theme.key(),
-        creator: ctx.accounts.creator.key(),
-        token_mint: ctx.accounts.token_mint.key(),
-        voting_mode: VotingMode::from_u8(theme.voting_mode)?,
-        total_supply: theme.total_supply,
-    });
-    
-    msg!("ThemeCreated event emitted");
-    msg!("=== MintInitialTokens COMPLETE ===");
     
     Ok(())
 }
 
-/// 初始化vault数据
+/// 步骤2: 铸造初始代币供应量并分配
+pub fn mint_initial_tokens(ctx: Context<MintInitialTokens>, theme_id: u64) -> Result<()> {
+    // 铸造总供应量到vault
+    mint_to_vault(&ctx, theme_id)?;
+    
+    // 计算并转移创建者储备
+    let creator_reserve = calculate_creator_reserve()?;
+    transfer_to_creator(&ctx, theme_id, creator_reserve)?;
+    
+    // 更新theme储备
+    update_theme_reserves(&mut ctx.accounts.theme, creator_reserve)?;
+    
+    // 发出事件
+    emit_theme_created_event(&ctx)?;
+    
+    Ok(())
+}
+
+/// 计算创建者储备 - 独立函数
 #[inline(never)]
-fn init_vault_data(vault: &mut ThemeVault, theme_key: Pubkey, vault_bump: u8) -> Result<()> {
-    vault.theme = theme_key;
-    vault.bump = vault_bump;
-    Ok(())
-}
-
-/// 计算创建者储备（20%）
-#[inline(always)]
-fn calculate_creator_reserve(total_supply: u64) -> Result<u64> {
-    total_supply
+fn calculate_creator_reserve() -> Result<u64> {
+    TOKEN_TOTAL_SUPPLY
         .checked_mul(CREATOR_RESERVE_PERCENT as u64)
         .and_then(|x| x.checked_div(100))
         .ok_or(ConsensusError::Overflow.into())
 }
 
-/// 铸造总供应量到vault
+/// 铸造到vault - 优化版本，直接使用数组而非Vec
 #[inline(never)]
-fn mint_total_supply_to_vault<'info>(
-    token_mint: &Account<'info, Mint>,
-    vault_token_account: &Account<'info, TokenAccount>,
-    vault: &Account<'info, ThemeVault>,
-    token_program: &Program<'info, Token>,
-    total_supply: u64,
-    vault_bump: u8,
-    creator_key: &Pubkey,
-    theme_id: u64,
-) -> Result<()> {
+fn mint_to_vault(ctx: &Context<MintInitialTokens>, theme_id: u64) -> Result<()> {
     let theme_id_bytes = theme_id.to_le_bytes();
-    let vault_seeds = &[
+    let bump_bytes = [ctx.accounts.theme.vault_bump];
+    let creator_key = ctx.accounts.creator.key();
+    
+    let seeds: &[&[u8]] = &[
         b"theme_vault",
         creator_key.as_ref(),
         theme_id_bytes.as_ref(),
-        &[vault_bump],
+        bump_bytes.as_ref(),
     ];
-    let signer = &[&vault_seeds[..]];
+    let signer = &[seeds];
 
     mint_to(
         CpiContext::new_with_signer(
-            token_program.to_account_info(),
+            ctx.accounts.token_program.to_account_info(),
             MintTo {
-                mint: token_mint.to_account_info(),
-                to: vault_token_account.to_account_info(),
-                authority: vault.to_account_info(),
+                mint: ctx.accounts.token_mint.to_account_info(),
+                to: ctx.accounts.vault_token_account.to_account_info(),
+                authority: ctx.accounts.vault.to_account_info(),
             },
             signer,
         ),
-        total_supply,
-    )?;
-
-    Ok(())
+        TOKEN_TOTAL_SUPPLY,
+    )
 }
 
-/// 转移创建者储备
+/// 转移到创建者 - 优化版本，直接使用数组而非Vec
 #[inline(never)]
-fn transfer_creator_reserve<'info>(
-    vault_token_account: &Account<'info, TokenAccount>,
-    creator_token_account: &Account<'info, TokenAccount>,
-    vault: &Account<'info, ThemeVault>,
-    token_program: &Program<'info, Token>,
-    creator_reserve: u64,
-    vault_bump: u8,
-    creator_key: &Pubkey,
-    theme_id: u64,
-) -> Result<()> {
+fn transfer_to_creator(ctx: &Context<MintInitialTokens>, theme_id: u64, amount: u64) -> Result<()> {
     let theme_id_bytes = theme_id.to_le_bytes();
-    let vault_seeds = &[
+    let bump_bytes = [ctx.accounts.theme.vault_bump];
+    let creator_key = ctx.accounts.creator.key();
+    
+    let seeds: &[&[u8]] = &[
         b"theme_vault",
         creator_key.as_ref(),
         theme_id_bytes.as_ref(),
-        &[vault_bump],
+        bump_bytes.as_ref(),
     ];
-    let signer = &[&vault_seeds[..]];
+    let signer = &[seeds];
 
     transfer(
         CpiContext::new_with_signer(
-            token_program.to_account_info(),
+            ctx.accounts.token_program.to_account_info(),
             Transfer {
-                from: vault_token_account.to_account_info(),
-                to: creator_token_account.to_account_info(),
-                authority: vault.to_account_info(),
+                from: ctx.accounts.vault_token_account.to_account_info(),
+                to: ctx.accounts.creator_token_account.to_account_info(),
+                authority: ctx.accounts.vault.to_account_info(),
             },
             signer,
         ),
-        creator_reserve,
-    )?;
-
-    Ok(())
+        amount,
+    )
 }
 
-/// 更新theme状态
+/// 更新theme储备 - 独立函数
 #[inline(never)]
-fn update_theme_after_minting(
-    theme: &mut Theme,
-    total_supply: u64,
-    creator_reserve: u64,
-) -> Result<()> {
-    // 流通供应量 = 总供应量 - 创建者储备（剩余在vault中）
-    theme.token_reserves = total_supply
+fn update_theme_reserves(theme: &mut Account<Theme>, creator_reserve: u64) -> Result<()> {
+    theme.token_reserves = TOKEN_TOTAL_SUPPLY
         .checked_sub(creator_reserve)
         .ok_or(ConsensusError::Overflow)?;
-    
-    // 其他字段在initialize_theme中已设置
-    // theme.total_supply, theme.circulating_supply, theme.creator_reserve 已设置
-
     Ok(())
 }
+
+/// 发出事件 - 独立函数
+#[inline(never)]
+fn emit_theme_created_event(ctx: &Context<MintInitialTokens>) -> Result<()> {
+    emit!(crate::ThemeCreated {
+        theme: ctx.accounts.theme.key(),
+        creator: ctx.accounts.creator.key(),
+        token_mint: ctx.accounts.token_mint.key(),
+        voting_mode: VotingMode::from_u8(ctx.accounts.theme.voting_mode)?,
+        total_supply: ctx.accounts.theme.total_supply,
+    });
+    Ok(())
+}
+

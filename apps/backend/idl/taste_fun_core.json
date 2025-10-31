@@ -1,5 +1,5 @@
 {
-  "address": "D5Cb9JvycX4Sgyu4iYxBSsnDpWEtZRg7fDZTUVMN9avU",
+  "address": "DiyEKJXPDNJ4Phfe3wVYkgi2NbJQuHtifgDgBYbCRuGe",
   "metadata": {
     "name": "taste_fun_core",
     "version": "0.1.0",
@@ -131,6 +131,9 @@
           }
         },
         {
+          "name": "theme_token_mint"
+        },
+        {
           "name": "initiator",
           "writable": true,
           "signer": true
@@ -152,6 +155,10 @@
         {
           "name": "prompt",
           "type": "string"
+        },
+        {
+          "name": "theme",
+          "type": "pubkey"
         },
         {
           "name": "depin_provider",
@@ -227,6 +234,17 @@
           }
         },
         {
+          "name": "theme_token_mint"
+        },
+        {
+          "name": "sponsor_token_account",
+          "writable": true
+        },
+        {
+          "name": "vault_token_account",
+          "writable": true
+        },
+        {
           "name": "initiator",
           "writable": true,
           "signer": true
@@ -241,6 +259,14 @@
           "writable": true
         },
         {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
@@ -253,6 +279,10 @@
         {
           "name": "prompt",
           "type": "string"
+        },
+        {
+          "name": "theme",
+          "type": "pubkey"
         },
         {
           "name": "depin_provider",
@@ -271,7 +301,7 @@
     {
       "name": "vote_for_image",
       "docs": [
-        "质押并投票选择图片 (二次方投票权重)"
+        "质押并投票选择图片 (使用主题代币质押)"
       ],
       "discriminator": [
         59,
@@ -371,9 +401,25 @@
           }
         },
         {
+          "name": "voter_token_account",
+          "writable": true
+        },
+        {
+          "name": "vault_token_account",
+          "writable": true
+        },
+        {
           "name": "voter",
           "writable": true,
           "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         },
         {
           "name": "system_program",
@@ -386,7 +432,7 @@
           "type": "u8"
         },
         {
-          "name": "stake_amount",
+          "name": "token_amount",
           "type": "u64"
         }
       ]
@@ -551,6 +597,14 @@
           {
             "name": "created_at",
             "type": "i64"
+          },
+          {
+            "name": "theme",
+            "type": "pubkey"
+          },
+          {
+            "name": "theme_token_mint",
+            "type": "pubkey"
           },
           {
             "name": "image_uris",

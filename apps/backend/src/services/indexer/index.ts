@@ -355,8 +355,25 @@ export class BlockchainIndexer {
     }
 
     try {
+      const logMessages = tx.meta?.logMessages || [];
+      
+      // Debug: Log transaction details
+      logger.debug('Parsing transaction', {
+        signature,
+        programType,
+        logMessageCount: logMessages.length,
+        hasLogs: logMessages.length > 0,
+      });
+
       // Parse events from transaction
-      const events = eventParser.parseLogs(tx.meta?.logMessages || []);
+      const events = eventParser.parseLogs(logMessages);
+
+      logger.debug('Parsed events', {
+        signature,
+        programType,
+        eventCount: events.length,
+        eventNames: events.map((e: any) => e.name),
+      });
 
       for (const event of events) {
         logger.info('Processing event', {
@@ -368,6 +385,14 @@ export class BlockchainIndexer {
 
         // Dispatch to appropriate handler
         await this.dispatchEvent(event.name, event.data, signature);
+      }
+      
+      if (events.length === 0 && logMessages.length > 0) {
+        logger.warn('No events parsed from transaction', {
+          signature,
+          programType,
+          logSample: logMessages.slice(0, 3),
+        });
       }
     } catch (error) {
       logger.error('Error parsing events', { error, signature, programType });
@@ -473,7 +498,8 @@ export class BlockchainIndexer {
       }
     } catch (error) {
       logger.error('Error dispatching event', {
-        error,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
         eventName,
         signature,
       });
@@ -508,11 +534,12 @@ export class BlockchainIndexer {
 
       for (const program of programsToSync) {
         // Get signatures for program account transactions in the gap
+        // Note: getSignaturesForAddress expects 'before' signature, not 'until' slot
         const signatures = await this.connection.getSignaturesForAddress(
           program.id,
           {
             limit: 1000,
-            until: this.lastProcessedSlot.toString(),
+            // Don't use 'until' with slot number - just get recent signatures
           }
         );
 

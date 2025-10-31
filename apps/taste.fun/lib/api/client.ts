@@ -3,7 +3,7 @@
  * Handles all HTTP requests to the backend API server
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ipfs.cradleintro.top/api';
 
 export interface IdeaStatus {
   GeneratingImages: 'GeneratingImages';

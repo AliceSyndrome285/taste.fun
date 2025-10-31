@@ -52,7 +52,8 @@ if (!(Test-Path ".env")) {
     Write-Host "   - PROGRAM_ID" -ForegroundColor Yellow
     Write-Host "   - DB_PASSWORD" -ForegroundColor Yellow
     Write-Host "   - IPFS_API_KEY (or IPFS_PROJECT_ID)" -ForegroundColor Yellow
-    Write-Host "   - DEPIN_API_KEY" -ForegroundColor Yellow
+    Write-Host "   Optional fields:" -ForegroundColor Yellow
+    Write-Host "   - DEPIN_API_KEY (password for Cloudflare Worker, default: admin123)" -ForegroundColor Yellow
     Write-Host ""
     $continue = Read-Host "Have you configured .env? (y/n)"
     if ($continue -ne "y") {

@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS ideas (
     id SERIAL PRIMARY KEY,
     pubkey VARCHAR(44) UNIQUE NOT NULL, -- Solana account public key
     idea_id BIGINT NOT NULL,
-    theme_pubkey VARCHAR(44) NOT NULL REFERENCES themes(pubkey) ON DELETE CASCADE,
+    theme_pubkey VARCHAR(44) REFERENCES themes(pubkey) ON DELETE CASCADE, -- NULL for standalone ideas
     initiator_pubkey VARCHAR(44) NOT NULL,
     sponsor_pubkey VARCHAR(44), -- NULL for non-sponsored ideas
     prompt TEXT NOT NULL,

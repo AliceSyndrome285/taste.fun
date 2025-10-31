@@ -299,11 +299,8 @@ export async function initializeTheme(
     )
     .accounts({
       theme: themePda,
-      vault: vaultPda,
-      tokenMint: tokenMintPda,
       creator: wallet.publicKey,
       systemProgram: SystemProgram.programId,
-      tokenProgram: TOKEN_PROGRAM_ID,
     })
     .preInstructions([
       ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }),
@@ -315,14 +312,60 @@ export async function initializeTheme(
 }
 
 /**
- * Create a new theme - Step 2: Mint initial tokens
+ * Create a new theme - Step 2: Initialize vault and mint
+ */
+export async function initVaultAndMint(
+  connection: Connection,
+  wallet: any,
+  themeId: BN
+): Promise<string> {
+  const provider = new AnchorProvider(connection, wallet, {
+    preflightCommitment: 'confirmed',
+    commitment: 'confirmed',
+  });
+  const program = new Program(
+    tasteFunTokenIdl as Idl,
+    provider
+  );
+
+  const [themePda] = getThemePda(wallet.publicKey, themeId);
+  const [vaultPda] = getThemeVaultPda(wallet.publicKey, themeId);
+  const [tokenMintPda] = getThemeTokenMintPda(wallet.publicKey, themeId);
+
+  // Get fresh blockhash before sending
+  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+
+  const tx = await (program.methods as any)
+    .initVaultAndMint(themeId)
+    .accounts({
+      theme: themePda,
+      vault: vaultPda,
+      tokenMint: tokenMintPda,
+      creator: wallet.publicKey,
+      tokenProgram: TOKEN_PROGRAM_ID,
+      systemProgram: SystemProgram.programId,
+    })
+    .preInstructions([
+      ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }),
+      ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 200_000 }),
+    ])
+    .rpc({ skipPreflight: false });
+
+  return tx;
+}
+
+/**
+ * Create a new theme - Step 3: Mint initial tokens
  */
 export async function mintInitialThemeTokens(
   connection: Connection,
   wallet: any,
   themeId: BN
 ): Promise<string> {
-  const provider = new AnchorProvider(connection, wallet, {});
+  const provider = new AnchorProvider(connection, wallet, {
+    preflightCommitment: 'confirmed',
+    commitment: 'confirmed',
+  });
   const program = new Program(
     tasteFunTokenIdl as Idl,
     provider
@@ -343,6 +386,9 @@ export async function mintInitialThemeTokens(
     wallet.publicKey
   );
 
+  // Get fresh blockhash before sending
+  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+
   const tx = await (program.methods as any)
     .mintInitialTokens(themeId)
     .accounts({
@@ -360,7 +406,7 @@ export async function mintInitialThemeTokens(
       ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }),
       ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 200_000 }),
     ])
-    .rpc();
+    .rpc({ skipPreflight: false });
 
   return tx;
 }
@@ -376,7 +422,7 @@ export async function createTheme(
   name: string,
   description: string,
   votingMode: VotingMode
-): Promise<{ initTx: string; mintTx: string }> {
+): Promise<{ initTx: string; vaultTx: string; mintTx: string }> {
   // Step 1: Initialize theme
   const initTx = await initializeTheme(
     connection,
@@ -387,13 +433,35 @@ export async function createTheme(
     votingMode
   );
 
-  // Wait for confirmation
-  await connection.confirmTransaction(initTx, 'confirmed');
+  // Wait for confirmation with more robust checking
+  const latestBlockhash = await connection.getLatestBlockhash('confirmed');
+  await connection.confirmTransaction({
+    signature: initTx,
+    blockhash: latestBlockhash.blockhash,
+    lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+  }, 'confirmed');
 
-  // Step 2: Mint initial tokens
+  // Add a small delay to ensure blockchain state is updated
+  await new Promise(resolve => setTimeout(resolve, 1000));
+
+  // Step 2: Init vault and mint (with fresh blockhash)
+  const vaultTx = await initVaultAndMint(connection, wallet, themeId);
+  
+  // Wait for vault confirmation
+  const vaultBlockhash = await connection.getLatestBlockhash('confirmed');
+  await connection.confirmTransaction({
+    signature: vaultTx,
+    blockhash: vaultBlockhash.blockhash,
+    lastValidBlockHeight: vaultBlockhash.lastValidBlockHeight,
+  }, 'confirmed');
+
+  // Add delay before final step
+  await new Promise(resolve => setTimeout(resolve, 1000));
+
+  // Step 3: Mint initial tokens (with fresh blockhash)
   const mintTx = await mintInitialThemeTokens(connection, wallet, themeId);
 
-  return { initTx, mintTx };
+  return { initTx, vaultTx, mintTx };
 }
 
 /**

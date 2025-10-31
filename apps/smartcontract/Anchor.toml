@@ -6,9 +6,9 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-taste_fun_core = "qupK2NZtQcGSNHQubrbEvXeza1YVj4pdzx3tTf8opeL"
-taste_fun_settlement = "8h6AzALcR6R4baMkCdknJev8jyQerFYsgHaKcZV5kA78"
-taste_fun_token = "5AJyXAbob3Rzcq4H7JPiWHeh7csVaJRUosPUC1NcWzGS" 
+taste_fun_core = "DiyEKJXPDNJ4Phfe3wVYkgi2NbJQuHtifgDgBYbCRuGe"
+taste_fun_settlement = "EeHN1oagPFzfyaye9FPyUjNx4nbnsFy2z3xhWPetVRxH"
+taste_fun_token = "AKLa61NJ7uwrSb13P7dhcuNfBFRJbVA2BVeqTtCXpe7X"
 
 [registry]
 url = "https://api.apr.dev"

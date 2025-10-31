@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use taste_fun_shared::*;
 
-declare_id!("3vRrmiTYYqrhdFUPf2ioBnmZQQB66yfKwKCBKFSVvdkg");
+declare_id!("AKLa61NJ7uwrSb13P7dhcuNfBFRJbVA2BVeqTtCXpe7X");
 
 pub mod instructions;
 use instructions::*;
@@ -38,7 +38,12 @@ pub mod taste_fun_token {
         instructions::initialize_theme(ctx, theme_id, name, description, voting_mode)
     }
 
-    /// 铸造初始代币 (第二步)
+    /// 初始化vault和mint (第二步)
+    pub fn init_vault_and_mint(ctx: Context<InitVaultAndMint>, theme_id: u64) -> Result<()> {
+        instructions::init_vault_and_mint(ctx, theme_id)
+    }
+
+    /// 铸造初始代币 (第三步)
     pub fn mint_initial_tokens(ctx: Context<MintInitialTokens>, theme_id: u64) -> Result<()> {
         instructions::mint_initial_tokens(ctx, theme_id)
     }

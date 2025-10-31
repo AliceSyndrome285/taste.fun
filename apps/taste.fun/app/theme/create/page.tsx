@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useConnection } from '@solana/wallet-adapter-react';
 import { BN } from '@coral-xyz/anchor';
-import { initializeTheme, mintInitialThemeTokens, VotingMode } from '@/lib/api/token';
+import { initializeTheme, initVaultAndMint, mintInitialThemeTokens, VotingMode } from '@/lib/api/token';
 import { Card } from '@/components/ui/card';
 
 export default function CreateThemePage() {
@@ -68,8 +68,8 @@ export default function CreateThemePage() {
         signAllTransactions,
       };
 
-      // Step 1: Initialize theme (create accounts)
-      console.log('Step 1: Initializing theme...');
+      // Step 1: Initialize theme account
+      console.log('Step 1: Initializing theme account...');
       const initTx = await initializeTheme(
         connection,
         wallet,
@@ -80,19 +80,27 @@ export default function CreateThemePage() {
       );
       console.log('Theme initialized:', initTx);
 
-      setLoadingStep('Waiting for confirmation...');
-      // Wait for confirmation before proceeding to step 2
+      setLoadingStep('Confirming theme initialization...');
       await connection.confirmTransaction(initTx, 'confirmed');
-      console.log('Initialization confirmed');
+      console.log('Theme initialization confirmed');
+
+      setLoadingStep('Initializing vault and token mint...');
+      // Step 2: Initialize vault and mint
+      console.log('Step 2: Initializing vault and mint...');
+      const vaultMintTx = await initVaultAndMint(connection, wallet, themeId);
+      console.log('Vault and mint initialized:', vaultMintTx);
+
+      setLoadingStep('Confirming vault initialization...');
+      await connection.confirmTransaction(vaultMintTx, 'confirmed');
+      console.log('Vault initialization confirmed');
 
       setLoadingStep('Minting initial tokens...');
-      // Step 2: Mint initial tokens
-      console.log('Step 2: Minting initial tokens...');
+      // Step 3: Mint initial tokens
+      console.log('Step 3: Minting initial tokens...');
       const mintTx = await mintInitialThemeTokens(connection, wallet, themeId);
       console.log('Tokens minted:', mintTx);
 
       setLoadingStep('Finalizing...');
-      // Wait for final confirmation
       await connection.confirmTransaction(mintTx, 'confirmed');
       
       console.log('Theme created successfully!');

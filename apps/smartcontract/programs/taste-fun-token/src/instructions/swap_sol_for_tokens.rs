@@ -67,25 +67,24 @@ pub struct SwapSolForTokens<'info> {
 }
 
 pub fn swap_sol_for_tokens(
-    ctx: Context<SwapSolForTokens>,
+    mut ctx: Context<SwapSolForTokens>,
     sol_amount: u64,
     min_tokens_out: u64,
 ) -> Result<()> {
-    let theme = &mut ctx.accounts.theme;
     let config = &ctx.accounts.trading_config;
     
     // Validate token mint matches theme
     require!(
-        ctx.accounts.token_mint.key() == theme.token_mint,
+        ctx.accounts.token_mint.key() == ctx.accounts.theme.token_mint,
         ConsensusError::InvalidMint
     );
     
     require!(
-        ctx.accounts.theme_creator.key() == theme.creator,
+        ctx.accounts.theme_creator.key() == ctx.accounts.theme.creator,
         ConsensusError::Unauthorized
     );
     require!(
-        theme.status == THEME_STATUS_ACTIVE,
+        ctx.accounts.theme.status == THEME_STATUS_ACTIVE,
         ConsensusError::InvalidTheme
     );
     require!(
@@ -98,8 +97,8 @@ pub fn swap_sol_for_tokens(
     // 这与pumpfun的恒定乘积公式一致
     let tokens_out = calculate_buy_tokens(
         sol_amount,
-        theme.token_reserves,  // y: 代币储备 
-        theme.sol_reserves,    // x: SOL储备
+        ctx.accounts.theme.token_reserves,  // y: 代币储备 
+        ctx.accounts.theme.sol_reserves,    // x: SOL储备
         config.trade_fee_bps,
     )?;
     
@@ -108,7 +107,7 @@ pub fn swap_sol_for_tokens(
         ConsensusError::SlippageExceeded
     );
     require!(
-        tokens_out <= theme.token_reserves,
+        tokens_out <= ctx.accounts.theme.token_reserves,
         ConsensusError::InsufficientReserves
     );
     
@@ -192,31 +191,12 @@ pub fn swap_sol_for_tokens(
         )?;
     }
     
-    // Transfer tokens from vault to user
-    let creator_key = theme.creator;
-    let theme_id_bytes = theme.theme_id.to_le_bytes();
-    let vault_seeds = &[
-        b"theme_vault",
-        creator_key.as_ref(),
-        theme_id_bytes.as_ref(),
-        &[theme.vault_bump],
-    ];
-    let signer = &[&vault_seeds[..]];
+    // Transfer tokens from vault to user - 优化版本避免栈分配
+    transfer_tokens_to_user_optimized(&mut ctx, tokens_out)?;
     
-    token::transfer(
-        CpiContext::new_with_signer(
-            ctx.accounts.token_program.to_account_info(),
-            Transfer {
-                from: ctx.accounts.vault_token_account.to_account_info(),
-                to: ctx.accounts.user_token_account.to_account_info(),
-                authority: ctx.accounts.vault.to_account_info(),
-            },
-            signer,
-        ),
-        tokens_out,
-    )?;
+    // Update theme state - now we can mutably borrow
+    let theme = &mut ctx.accounts.theme;
     
-    // Update theme state
     // 只有净SOL进入储备，回购费单独累积
     theme.sol_reserves = theme.sol_reserves
         .checked_add(sol_to_reserves)
@@ -265,4 +245,38 @@ fn calculate_fee_portion(total_fee: u64, split_bps: u16) -> Result<u64> {
         .checked_div(BPS_DENOMINATOR as u128)
         .ok_or(ConsensusError::DivisionByZero)?
         as u64)
+}
+
+/// 转移代币到用户 - 优化版本，使用栈数组避免Vec
+#[inline(never)]
+fn transfer_tokens_to_user_optimized(
+    ctx: &mut Context<SwapSolForTokens>,
+    tokens_out: u64,
+) -> Result<()> {
+    let theme = &ctx.accounts.theme;
+    let theme_id_bytes = theme.theme_id.to_le_bytes();
+    let bump_bytes = [theme.vault_bump];
+    
+    let seeds: &[&[u8]] = &[
+        b"theme_vault",
+        theme.creator.as_ref(),
+        theme_id_bytes.as_ref(),
+        bump_bytes.as_ref(),
+    ];
+    let signer = &[seeds];
+    
+    token::transfer(
+        CpiContext::new_with_signer(
+            ctx.accounts.token_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.vault_token_account.to_account_info(),
+                to: ctx.accounts.user_token_account.to_account_info(),
+                authority: ctx.accounts.vault.to_account_info(),
+            },
+            signer,
+        ),
+        tokens_out,
+    )?;
+    
+    Ok(())
 }
