@@ -27,28 +27,74 @@ import { QueueService } from '../services/queue';
  * Handle ThemeCreated event
  */
 export async function handleThemeCreated(
-  event: ThemeCreatedEvent,
+  event: any,  // Use any because Anchor returns snake_case from IDL
   signature: string
 ): Promise<void> {
   try {
+    // Debug: log the raw event object
+    logger.debug('Raw ThemeCreated event', {
+      event: JSON.stringify(event, null, 2),
+      eventKeys: Object.keys(event),
+      signature,
+    });
+
+    // Anchor EventParser returns snake_case field names from IDL
+    // IDL has: token_mint, voting_mode, total_supply
+    const theme = event.theme;
+    const creator = event.creator;
+    const tokenMint = event.token_mint || event.tokenMint;  // Try both
+    const eventVotingMode = event.voting_mode || event.votingMode;  // Renamed to avoid conflict
+    const totalSupply = event.total_supply || event.totalSupply;
+
+    // Safely check if fields exist
+    if (!theme || !creator || !tokenMint) {
+      logger.error('Missing required fields in ThemeCreated event', {
+        hasTheme: !!theme,
+        hasCreator: !!creator,
+        hasTokenMint: !!tokenMint,
+        event: JSON.stringify(event),
+        signature,
+      });
+      throw new Error('Missing required fields in ThemeCreated event');
+    }
+
     logger.info('Handling ThemeCreated event', {
-      theme: event.theme.toString(),
-      creator: event.creator.toString(),
-      tokenMint: event.tokenMint.toString(),
+      theme: theme.toString(),
+      creator: creator.toString(),
+      tokenMint: tokenMint.toString(),
       signature,
     });
 
     // Fetch theme account data from chain to get full details
-    const themeAccountInfo = await fetchThemeAccountData(event.theme.toString());
+    // Note: Theme account might not be fully initialized immediately after event
+    // Add retry logic with exponential backoff
+    let themeAccountInfo = null;
+    let retryCount = 0;
+    const maxRetries = 5;
+    const retryDelays = [500, 1000, 2000, 4000, 8000]; // ms
+
+    while (retryCount < maxRetries && !themeAccountInfo) {
+      if (retryCount > 0) {
+        logger.info('Retrying theme account fetch', {
+          theme: theme.toString(),
+          attempt: retryCount + 1,
+          delay: retryDelays[retryCount - 1],
+        });
+        await new Promise(resolve => setTimeout(resolve, retryDelays[retryCount - 1]));
+      }
+      
+      themeAccountInfo = await fetchThemeAccountData(theme.toString());
+      retryCount++;
+    }
 
     if (!themeAccountInfo) {
-      throw new Error('Failed to fetch theme account data');
+      throw new Error('Failed to fetch theme account data after ' + maxRetries + ' attempts');
     }
 
     // Convert voting mode enum
     let votingMode: VotingMode;
-    if ('classic' in event.votingMode) votingMode = VotingMode.Classic;
-    else if ('reverse' in event.votingMode) votingMode = VotingMode.Reverse;
+    if ('classic' in eventVotingMode) votingMode = VotingMode.Classic;
+    else if ('reverse' in eventVotingMode) votingMode = VotingMode.Reverse;
     else votingMode = VotingMode.MiddleWay;
 
     // Insert into database
@@ -59,13 +105,13 @@ export async function handleThemeCreated(
         token_reserves, sol_reserves, buyback_pool, voting_mode, status, created_at
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())`,
       [
-        event.theme.toString(),
+        theme.toString(),
         themeAccountInfo.themeId,
-        event.creator.toString(),
+        creator.toString(),
         themeAccountInfo.name,
         themeAccountInfo.description,
-        event.tokenMint.toString(),
-        event.totalSupply.toString(),
+        tokenMint.toString(),
+        totalSupply?.toString() || '0',
         themeAccountInfo.circulatingSupply.toString(),
         themeAccountInfo.creatorReserve.toString(),
         themeAccountInfo.tokenReserves.toString(),
@@ -232,34 +278,65 @@ async function fetchThemeAccountData(themePubkey: string): Promise<any> {
     const fs = await import('fs');
     const path = await import('path');
 
+    logger.debug('Fetching theme account data', { 
+      themePubkey,
+      rpcUrl: config.solana.rpcUrl 
+    });
+
     const connection = new Connection(config.solana.rpcUrl);
     const idlPath = path.join(__dirname, '../../idl/taste_fun_token.json');
     const idlContent = fs.readFileSync(idlPath, 'utf-8');
     const idl = JSON.parse(idlContent);
 
+    logger.debug('IDL loaded', { 
+      programId: idl.address || idl.metadata?.address,
+      accountTypes: Object.keys(idl.accounts || {})
+    });
+
     const provider = new AnchorProvider(connection, {} as any, {});
     const program = new Program(idl, provider);
+
+    logger.debug('Attempting to fetch theme account', { themePubkey });
 
     const themeAccount: any = await (program.account as any).theme.fetch(
       new PublicKey(themePubkey)
     );
 
+    logger.debug('Theme account fetched successfully', { 
+      themePubkey,
+      accountData: JSON.stringify(themeAccount, (key, value) =>
+        typeof value === 'bigint' ? value.toString() : value
+      )
+    });
+
+    // Anchor returns snake_case field names from IDL
+    // IDL fields: theme_id, token_mint, total_supply, circulating_supply, creator_reserve,
+    //             token_reserves, sol_reserves, buyback_pool
+    
     // Convert name and description from byte arrays to strings
-    const name = Buffer.from(themeAccount.name).toString('utf8').replace(/\0/g, '');
-    const description = Buffer.from(themeAccount.description).toString('utf8').replace(/\0/g, '');
+    const nameArray = themeAccount.name || themeAccount.name;
+    const descArray = themeAccount.description || themeAccount.description;
+    
+    const name = Buffer.from(nameArray).toString('utf8').replace(/\0/g, '');
+    const description = Buffer.from(descArray).toString('utf8').replace(/\0/g, '');
 
     return {
-      themeId: themeAccount.themeId.toString(),
+      themeId: (themeAccount.theme_id || themeAccount.themeId).toString(),
       name,
       description,
-      circulatingSupply: themeAccount.circulatingSupply.toString(),
-      creatorReserve: themeAccount.creatorReserve.toString(),
-      tokenReserves: themeAccount.tokenReserves.toString(),
-      solReserves: themeAccount.solReserves.toString(),
-      buybackPool: themeAccount.buybackPool.toString(),
+      circulatingSupply: (themeAccount.circulating_supply || themeAccount.circulatingSupply).toString(),
+      creatorReserve: (themeAccount.creator_reserve || themeAccount.creatorReserve).toString(),
+      tokenReserves: (themeAccount.token_reserves || themeAccount.tokenReserves).toString(),
+      solReserves: (themeAccount.sol_reserves || themeAccount.solReserves).toString(),
+      buybackPool: (themeAccount.buyback_pool || themeAccount.buybackPool).toString(),
     };
   } catch (error) {
-    logger.error('Error fetching theme account data', { error, themePubkey });
+    logger.error('Error fetching theme account data', { 
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      errorDetails: JSON.stringify(error),
+      themePubkey 
+    });
     return null;
   }
 }

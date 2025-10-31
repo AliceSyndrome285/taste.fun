@@ -423,6 +423,8 @@ export async function createTheme(
   description: string,
   votingMode: VotingMode
 ): Promise<{ initTx: string; vaultTx: string; mintTx: string }> {
+  console.log('[createTheme] Step 1: Initializing theme...');
+  
   // Step 1: Initialize theme
   const initTx = await initializeTheme(
     connection,
@@ -433,6 +435,8 @@ export async function createTheme(
     votingMode
   );
 
+  console.log('[createTheme] Step 1 complete, tx:', initTx);
+
   // Wait for confirmation with more robust checking
   const latestBlockhash = await connection.getLatestBlockhash('confirmed');
   await connection.confirmTransaction({
@@ -441,12 +445,18 @@ export async function createTheme(
     lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
   }, 'confirmed');
 
-  // Add a small delay to ensure blockchain state is updated
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  console.log('[createTheme] Step 1 confirmed, waiting 2s...');
+  
+  // Add delay to ensure blockchain state is updated
+  await new Promise(resolve => setTimeout(resolve, 2000));
+
+  console.log('[createTheme] Step 2: Initializing vault and mint...');
 
   // Step 2: Init vault and mint (with fresh blockhash)
   const vaultTx = await initVaultAndMint(connection, wallet, themeId);
   
+  console.log('[createTheme] Step 2 complete, tx:', vaultTx);
+
   // Wait for vault confirmation
   const vaultBlockhash = await connection.getLatestBlockhash('confirmed');
   await connection.confirmTransaction({
@@ -455,11 +465,18 @@ export async function createTheme(
     lastValidBlockHeight: vaultBlockhash.lastValidBlockHeight,
   }, 'confirmed');
 
+  console.log('[createTheme] Step 2 confirmed, waiting 2s...');
+
   // Add delay before final step
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await new Promise(resolve => setTimeout(resolve, 2000));
+
+  console.log('[createTheme] Step 3: Minting initial tokens...');
 
   // Step 3: Mint initial tokens (with fresh blockhash)
   const mintTx = await mintInitialThemeTokens(connection, wallet, themeId);
+
+  console.log('[createTheme] Step 3 complete, tx:', mintTx);
+  console.log('[createTheme] All steps completed successfully!');
 
   return { initTx, vaultTx, mintTx };
 }
