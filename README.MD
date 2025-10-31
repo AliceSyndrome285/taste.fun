@@ -23,7 +23,7 @@ Taste.Fun transforms creative ideas into economic assets. When users create a th
 - Broadcasting system for compute order matching
 - Support for future io.net and Render Network integration
 
-### 3. **Prediction Market "Taste Gamess"**
+### 3. **Prediction Market "Taste Games"**
 - Stake theme tokens to vote on favorite content
 - 5 voting options: Image A-D or Reject All
 - Time-weighted rewards (20% bonus for early voters)
