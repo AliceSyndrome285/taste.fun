@@ -1,0 +1,739 @@
+{
+  "address": "Ep2FC52vgZd4VVGwKH4YLyxQtorNMbz2N33VaL2pidYK",
+  "metadata": {
+    "name": "taste_fun_settlement",
+    "version": "0.1.0",
+    "spec": "0.1.0"
+  },
+  "instructions": [
+    {
+      "name": "settle_voting",
+      "docs": [
+        "结算投票，分配奖金 (含时间加权、平台费用、RejectAll逻辑)"
+      ],
+      "discriminator": [
+        73,
+        72,
+        239,
+        7,
+        53,
+        76,
+        81,
+        117
+      ],
+      "accounts": [
+        {
+          "name": "idea",
+          "writable": true
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "idea"
+              }
+            ]
+          }
+        },
+        {
+          "name": "initiator",
+          "writable": true
+        },
+        {
+          "name": "protocol_treasury",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "withdraw_refund",
+      "docs": [
+        "提取退款 (仅在取消时可用)"
+      ],
+      "discriminator": [
+        220,
+        99,
+        224,
+        50,
+        13,
+        71,
+        215,
+        101
+      ],
+      "accounts": [
+        {
+          "name": "idea",
+          "writable": true
+        },
+        {
+          "name": "vote",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  111,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "idea"
+              },
+              {
+                "kind": "account",
+                "path": "reviewer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "reviewer_stake",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  118,
+                  105,
+                  101,
+                  119,
+                  101,
+                  114,
+                  95,
+                  115,
+                  116,
+                  97,
+                  107,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "idea"
+              },
+              {
+                "kind": "account",
+                "path": "reviewer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "idea"
+              }
+            ]
+          }
+        },
+        {
+          "name": "reviewer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "withdraw_winnings",
+      "docs": [
+        "提取奖金"
+      ],
+      "discriminator": [
+        75,
+        180,
+        148,
+        117,
+        81,
+        100,
+        169,
+        50
+      ],
+      "accounts": [
+        {
+          "name": "idea",
+          "writable": true
+        },
+        {
+          "name": "vote",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  111,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "idea"
+              },
+              {
+                "kind": "account",
+                "path": "reviewer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "reviewer_stake",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  118,
+                  105,
+                  101,
+                  119,
+                  101,
+                  114,
+                  95,
+                  115,
+                  116,
+                  97,
+                  107,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "idea"
+              },
+              {
+                "kind": "account",
+                "path": "reviewer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "idea"
+              }
+            ]
+          }
+        },
+        {
+          "name": "reviewer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Idea",
+      "discriminator": [
+        89,
+        220,
+        83,
+        214,
+        252,
+        228,
+        36,
+        123
+      ]
+    },
+    {
+      "name": "ReviewerStake",
+      "discriminator": [
+        70,
+        12,
+        166,
+        74,
+        111,
+        62,
+        196,
+        178
+      ]
+    },
+    {
+      "name": "Vault",
+      "discriminator": [
+        211,
+        8,
+        232,
+        43,
+        2,
+        152,
+        117,
+        119
+      ]
+    },
+    {
+      "name": "Vote",
+      "discriminator": [
+        96,
+        91,
+        104,
+        57,
+        145,
+        35,
+        172,
+        155
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "RefundWithdrawn",
+      "discriminator": [
+        51,
+        49,
+        35,
+        233,
+        115,
+        199,
+        172,
+        251
+      ]
+    },
+    {
+      "name": "VotingCancelled",
+      "discriminator": [
+        3,
+        85,
+        34,
+        110,
+        28,
+        42,
+        101,
+        183
+      ]
+    },
+    {
+      "name": "VotingSettled",
+      "discriminator": [
+        116,
+        55,
+        87,
+        22,
+        78,
+        222,
+        234,
+        56
+      ]
+    },
+    {
+      "name": "WinningsWithdrawn",
+      "discriminator": [
+        155,
+        86,
+        83,
+        234,
+        90,
+        38,
+        56,
+        139
+      ]
+    }
+  ],
+  "types": [
+    {
+      "name": "GenerationStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Pending"
+          },
+          {
+            "name": "Completed"
+          },
+          {
+            "name": "Failed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Idea",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "initiator",
+            "type": "pubkey"
+          },
+          {
+            "name": "idea_id",
+            "type": "u64"
+          },
+          {
+            "name": "prompt",
+            "type": "string"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "image_uris",
+            "type": {
+              "vec": "string"
+            }
+          },
+          {
+            "name": "generation_status",
+            "type": {
+              "defined": {
+                "name": "GenerationStatus"
+              }
+            }
+          },
+          {
+            "name": "generation_deadline",
+            "type": "i64"
+          },
+          {
+            "name": "depin_provider",
+            "type": "pubkey"
+          },
+          {
+            "name": "sponsor",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "initial_prize_pool",
+            "type": "u64"
+          },
+          {
+            "name": "total_staked",
+            "type": "u64"
+          },
+          {
+            "name": "min_stake",
+            "type": "u64"
+          },
+          {
+            "name": "curator_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "votes",
+            "type": {
+              "array": [
+                "u64",
+                4
+              ]
+            }
+          },
+          {
+            "name": "reject_all_weight",
+            "type": "u64"
+          },
+          {
+            "name": "total_voters",
+            "type": "u64"
+          },
+          {
+            "name": "winning_image_index",
+            "type": {
+              "option": "u8"
+            }
+          },
+          {
+            "name": "curator_fee_collected",
+            "type": "u64"
+          },
+          {
+            "name": "platform_fee_collected",
+            "type": "u64"
+          },
+          {
+            "name": "penalty_pool_amount",
+            "type": "u64"
+          },
+          {
+            "name": "winner_count",
+            "type": "u64"
+          },
+          {
+            "name": "voting_deadline",
+            "type": "i64"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "IdeaStatus"
+              }
+            }
+          },
+          {
+            "name": "vault_bump",
+            "type": "u8"
+          },
+          {
+            "name": "idea_bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "IdeaStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "GeneratingImages"
+          },
+          {
+            "name": "Voting"
+          },
+          {
+            "name": "Completed"
+          },
+          {
+            "name": "Cancelled"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RefundWithdrawn",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "idea",
+            "type": "pubkey"
+          },
+          {
+            "name": "reviewer",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ReviewerStake",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "idea",
+            "type": "pubkey"
+          },
+          {
+            "name": "reviewer",
+            "type": "pubkey"
+          },
+          {
+            "name": "total_staked",
+            "type": "u64"
+          },
+          {
+            "name": "is_winner",
+            "type": "bool"
+          },
+          {
+            "name": "winnings",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Vault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "idea",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Vote",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "idea",
+            "type": "pubkey"
+          },
+          {
+            "name": "voter",
+            "type": "pubkey"
+          },
+          {
+            "name": "image_choice",
+            "type": "u8"
+          },
+          {
+            "name": "stake_amount",
+            "type": "u64"
+          },
+          {
+            "name": "vote_weight",
+            "type": "u64"
+          },
+          {
+            "name": "ts",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "VotingCancelled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "idea",
+            "type": "pubkey"
+          },
+          {
+            "name": "reason",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "VotingSettled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "idea",
+            "type": "pubkey"
+          },
+          {
+            "name": "winning_image_index",
+            "type": "u8"
+          },
+          {
+            "name": "total_staked",
+            "type": "u64"
+          },
+          {
+            "name": "curator_fee",
+            "type": "u64"
+          },
+          {
+            "name": "platform_fee",
+            "type": "u64"
+          },
+          {
+            "name": "penalty_pool",
+            "type": "u64"
+          },
+          {
+            "name": "winner_count",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "WinningsWithdrawn",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "idea",
+            "type": "pubkey"
+          },
+          {
+            "name": "reviewer",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}
